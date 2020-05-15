@@ -26,7 +26,7 @@ def estimate_watermark(foldername):
     for r, dirs, files in os.walk(foldername):
         # Get all the images
         print(f"Getting images done, total image count: {len(files)}")
-        for file in tqdm(files[:50]):
+        for file in tqdm(files[:100]):
             img = cv2.imread(os.sep.join([r, file]))
             if img is not None:
                 images.append(img)
@@ -55,7 +55,7 @@ def PlotImage(image):
     return (im - np.min(im)) / (np.max(im) - np.min(im))
 
 
-def poisson_reconstruct(gradx, grady, boundarysrc):
+def poisson_reconstruct2(gradx, grady, boundarysrc):
     # Thanks to Dr. Ramesh Raskar for providing the original matlab code from which this is derived
     # Dr. Raskar's version is available here: http://web.media.mit.edu/~raskar/photo/code.pdf
 
@@ -96,7 +96,7 @@ def poisson_reconstruct(gradx, grady, boundarysrc):
     return result
 
 
-def poisson_reconstruct2(gradx, grady, kernel_size=KERNEL_SIZE, num_iters=100, h=0.1,
+def poisson_reconstruct(gradx, grady, kernel_size=KERNEL_SIZE, num_iters=100, h=0.1,
                         boundary_image=None, boundary_zero=True):
     """
 	Iterative algorithm for Poisson reconstruction.
@@ -119,7 +119,7 @@ def poisson_reconstruct2(gradx, grady, kernel_size=KERNEL_SIZE, num_iters=100, h
     est[1:-1, 1:-1, :] = np.random.random((m - 2, n - 2, p))
     loss = []
 
-    for i in range(num_iters):
+    for i in xrange(num_iters):
         old_est = est.copy()
         est[1:-1, 1:-1, :] = 0.25 * (
                 est[0:-2, 1:-1, :] + est[1:-1, 0:-2, :] + est[2:, 1:-1, :] + est[1:-1, 2:, :] - h * h * laplacian[
@@ -175,7 +175,7 @@ def watermark_detector(img, gx, gy, thresh_low=200, thresh_high=220, printval=Fa
 	Assuming cropped values of gradients are given.
 	Returns image, start and end coordinates
 	"""
-    Wm = np.average(np.sqrt(np.square(gx) + np.square(gy)), axis=2)
+    Wm = (np.average(np.sqrt(np.square(gx) + np.square(gy)), axis=2))
 
     img_edgemap = (cv2.Canny(img, thresh_low, thresh_high))
     chamfer_dist = cv2.filter2D(img_edgemap.astype(float), -1, Wm)
@@ -184,18 +184,9 @@ def watermark_detector(img, gx, gy, thresh_low=200, thresh_high=220, printval=Fa
     index = np.unravel_index(np.argmax(chamfer_dist), img.shape[:-1])
     if printval:
         print(index)
-
     x, y = (index[0] - rect[0] / 2), (index[1] - rect[1] / 2)
     x = int(x)
     y = int(y)
     im = img.copy()
-    if printval:
-        print("-"*25,"x,y, rect values and types")
-        print(x)
-        print(y)
-        print(type(x))
-        print(type(y))
-        print(type(rect[0]),type(rect[1]))
-        print("image type",type(im))
-    cv2.rectangle(im, (y, x), (y + rect[1], x + rect[0]), (255, 0, 0),3)
+    cv2.rectangle(im, (y, x), (y + rect[1], x + rect[0]), (255, 0, 0))
     return (im, (x, y), (rect[0], rect[1]))
