@@ -26,7 +26,7 @@ def estimate_watermark(foldername):
     for r, dirs, files in os.walk(foldername):
         # Get all the images
         print(f"Getting images done, total image count: {len(files)}")
-        for file in tqdm(files[:100]):
+        for file in tqdm(files):
             img = cv2.imread(os.sep.join([r, file]))
             if img is not None:
                 images.append(img)
@@ -119,7 +119,7 @@ def poisson_reconstruct(gradx, grady, kernel_size=KERNEL_SIZE, num_iters=100, h=
     est[1:-1, 1:-1, :] = np.random.random((m - 2, n - 2, p))
     loss = []
 
-    for i in xrange(num_iters):
+    for i in range(num_iters):
         old_est = est.copy()
         est[1:-1, 1:-1, :] = 0.25 * (
                 est[0:-2, 1:-1, :] + est[1:-1, 0:-2, :] + est[2:, 1:-1, :] + est[1:-1, 2:, :] - h * h * laplacian[
@@ -128,7 +128,7 @@ def poisson_reconstruct(gradx, grady, kernel_size=KERNEL_SIZE, num_iters=100, h=
         error = np.sum(np.square(est - old_est))
         loss.append(error)
 
-    return (est)
+    return (est, loss)
 
 
 def image_threshold(image, threshold=0.5):

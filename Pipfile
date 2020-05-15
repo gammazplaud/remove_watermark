@@ -11,6 +11,8 @@ opencv-python = "*"
 matplotlib = "*"
 numpy = "*"
 tqdm = "*"
+pillow = "*"
+requests = "*"
 
 [requires]
 python_version = "3.8"
