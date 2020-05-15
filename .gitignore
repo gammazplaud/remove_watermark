@@ -1,0 +1,6 @@
+# Directories
+photos_640_1000
+.ipynb_checkpoints
+
+#Extensions
+*.lock
